@@ -1,5 +1,3 @@
-alert("THIS IS THE NEW SCRIPT");
-
 console.log("window.supabase =", window.supabase);
 
 try {
