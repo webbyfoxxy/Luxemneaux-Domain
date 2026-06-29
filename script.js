@@ -220,25 +220,25 @@ if (window.location.pathname.includes("index.html")) {
 // =========================
 // DISPLAY USER
 // =========================
-function display() {
+function display(){
 
-    document.getElementById("fullNameDisplay").innerText =
-        currentUser.full_name;
+  document.getElementById("fullNameDisplay").innerText =
+      currentUser.full_name;
 
-    document.getElementById("roleDisplay").innerText =
-        `${currentUser.role_name} (${currentUser.role})`;
+  document.getElementById("roleDisplay").innerText =
+      currentUser.role_name + " (" + currentUser.role + ")";
 
-    document.getElementById("kingdomDisplay").innerText =
-        `Kingdom: ${currentUser.kingdom}`;
+  document.getElementById("kingdomDisplay").innerText =
+      "Kingdom: " + currentUser.kingdom;
 
-    document.getElementById("balance").innerText =
+  document.getElementById("balance").innerText =
 `Bront: ${currentUser.bront}
 Sylem: ${currentUser.sylem}
 Virel: ${currentUser.virel}
 Aurel: ${currentUser.aurel}
 Lumen: ${currentUser.lumen}`;
 
-    displayTransactions();
+  displayTransactions();
 }
 
 // =========================
