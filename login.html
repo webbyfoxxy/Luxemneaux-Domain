@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Roleplay Bank - Login/Register</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>🏦 Roleplay Bank</h1>
+
+<div class="card">
+  <h2>Register</h2>
+  <input type="text" id="fullName" placeholder="Full Name">
+  <input type="text" id="regUser" placeholder="Username">
+  <input type="password" id="regPass" placeholder="Password">
+  <select id="regRole">
+    <option value="Commoner">Commoner</option>
+    <option value="Noble">Noble</option>
+    <option value="Royal">Royal</option>
+    <option value="Creator">Creator</option>
+  </select>
+  <input type="text" id="roleName" placeholder="Role Name">
+  <select id="kingdomSelect"></select>
+  <button onclick="register()">Register</button>
+</div>
+
+<div class="card">
+  <h2>Login</h2>
+  <input type="text" id="loginUser" placeholder="Username">
+  <input type="password" id="loginPass" placeholder="Password">
+  <button onclick="login()">Login</button>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
