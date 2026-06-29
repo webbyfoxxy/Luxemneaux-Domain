@@ -20,80 +20,59 @@ let currentUser = null;
 // LOAD ALL DATA
 // =========================
 async function loadData() {
-    console.log("Inside loadData");
-    console.log("window.supabase =", window.supabase);
-    console.log("supabase =", supabase);
-    console.log("typeof supabase.from =", typeof supabase.from);
-    console.log("same object?", supabase === window.supabase);
 
-    console.log("loadKingdoms() called");
+    console.log("STEP 1");
 
-    // Load users
-    const { data: usersData } = await supabase
-        .from("users")
+    const { data: kingdomData, error } = await supabase
+        .from("kingdoms")
         .select("*");
 
-    users = usersData || [];
+    console.log("STEP 2");
+    console.log(kingdomData);
+    console.log(error);
 
-    // Load kingdoms
-    const { data: kingdomData, error: kingdomError } = await supabase
-    .from("kingdoms")
-    .select("*");
+    kingdoms = kingdomData ? kingdomData.map(k => k.name) : [];
 
-console.log("Kingdom Data:", kingdomData);
-console.log("Kingdom Error:", kingdomError);
+    console.log("STEP 3");
+    console.log(kingdoms);
 
-if (kingdomError) {
-    console.error(kingdomError);
-    return;
-}
+    loadKingdoms();
 
-kingdoms = kingdomData.map(k => k.name);
-
-console.log("Kingdom Array:", kingdoms);
-
-loadKingdoms();
+    console.log("STEP 4");
 }
 // =========================
 // LOAD KINGDOMS
 // =========================
 function loadKingdoms() {
 
+    console.log("loadKingdoms()");
+
     const select = document.getElementById("kingdomSelect");
 
-    if (select) {
+    console.log(select);
 
-        select.innerHTML = "";
-
-        kingdoms.forEach(kingdom => {
-
-            const option = document.createElement("option");
-            option.value = kingdom;
-            option.textContent = kingdom;
-
-            select.appendChild(option);
-
-        });
-
+    if (!select) {
+        console.log("SELECT NOT FOUND");
+        return;
     }
 
-    const deleteSelect = document.getElementById("deleteKingdom");
+    select.innerHTML = "";
 
-    if (deleteSelect) {
+    console.log("Kingdom count:", kingdoms.length);
 
-        deleteSelect.innerHTML = "";
+    kingdoms.forEach(name => {
 
-        kingdoms.forEach(kingdom => {
+        console.log("Adding:", name);
 
-            const option = document.createElement("option");
-            option.value = kingdom;
-            option.textContent = kingdom;
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
 
-            deleteSelect.appendChild(option);
+        select.appendChild(option);
 
-        });
+    });
 
-    }
+    console.log("Finished");
 }
 // =========================
 // REGISTER
