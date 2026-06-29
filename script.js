@@ -1,11 +1,6 @@
 console.log("window.supabase =", window.supabase);
-
-try {
-    console.log("supabase =", supabase);
-} catch (e) {
-    console.log("supabase variable doesn't exist yet");
-}
-
+console.log("window.supabase.from =", window.supabase.from);
+console.log("window.supabase.createClient =", window.supabase.createClient);
 // =========================
 // DATABASE
 // =========================
