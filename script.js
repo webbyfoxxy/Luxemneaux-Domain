@@ -20,15 +20,11 @@ let currentUser = null;
 async function loadData() {
 
     // Load users
-    const { data: usersData, error: usersError } = await supabase
+    const { data: usersData } = await supabase
         .from("users")
         .select("*");
 
-    if (usersError) {
-        console.error(usersError);
-    } else {
-        users = usersData || [];
-    }
+    users = usersData || [];
 
     // Load kingdoms
     const { data: kingdomData, error: kingdomError } = await supabase
@@ -37,24 +33,62 @@ async function loadData() {
 
     if (kingdomError) {
         console.error(kingdomError);
-    } else {
-        kingdoms = kingdomData.map(k => k.name);
+        return;
     }
 
+    kingdoms = kingdomData.map(k => k.name);
+
     // Load transactions
-    const { data: transactionData, error: transactionError } = await supabase
+    const { data: transactionData } = await supabase
         .from("transactions")
         .select("*");
 
-    if (transactionError) {
-        console.error(transactionError);
-    } else {
-        transactionsDB = transactionData || [];
-    }
+    transactionsDB = transactionData || [];
 
+    // Populate the dropdown
     loadKingdoms();
 }
+// =========================
+// LOAD KINGDOMS
+// =========================
+function loadKingdoms() {
 
+    const select = document.getElementById("kingdomSelect");
+
+    if (select) {
+
+        select.innerHTML = "";
+
+        kingdoms.forEach(kingdom => {
+
+            const option = document.createElement("option");
+            option.value = kingdom;
+            option.textContent = kingdom;
+
+            select.appendChild(option);
+
+        });
+
+    }
+
+    const deleteSelect = document.getElementById("deleteKingdom");
+
+    if (deleteSelect) {
+
+        deleteSelect.innerHTML = "";
+
+        kingdoms.forEach(kingdom => {
+
+            const option = document.createElement("option");
+            option.value = kingdom;
+            option.textContent = kingdom;
+
+            deleteSelect.appendChild(option);
+
+        });
+
+    }
+}
 // =========================
 // REGISTER
 // =========================
