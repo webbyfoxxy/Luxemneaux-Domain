@@ -240,16 +240,30 @@ Lumen: ${currentUser.lumen}`;
 
   displayTransactions();
 }
-//RefreshCurrentUser
+// =========================
+// REFRESH CURRENT USER
+// =========================
 async function refreshCurrentUser() {
 
-    const { data } = await supabase
+    if (!currentUser) return;
+
+    const { data, error } = await supabase
         .from("users")
         .select("*")
         .eq("username", currentUser.username)
         .single();
 
+    if (error) {
+        console.error(error);
+        return;
+    }
+
     currentUser = data;
+
+    sessionStorage.setItem(
+        "currentUser",
+        JSON.stringify(currentUser)
+    );
 }
 // =========================
 // CREATOR - USER TABLE
@@ -335,6 +349,7 @@ async function createKingdom() {
     }
 
     await loadData();
+    await refreshCurrentUser();
 
     document.getElementById("newKingdom").value = "";
 
@@ -397,6 +412,7 @@ async function deleteKingdom() {
 
     // Reload latest data
     await loadData();
+    await refreshCurrentUser();
 
     // Refresh Creator dashboard
     displayAllUsers();
@@ -465,6 +481,7 @@ async function deleteUser() {
 
     // Reload latest data
     await loadData();
+    await refreshCurrentUser();
 
     // Refresh dashboard
     displayAllUsers();
@@ -523,6 +540,7 @@ async function toggleSuspend() {
 
     // Reload latest data
     await loadData();
+    await refreshCurrentUser();
 
     // Refresh dashboard
     displayAllUsers();
@@ -596,21 +614,9 @@ async function addCoins() {
 
     // Reload everything from Supabase
     await loadData();
+await refreshCurrentUser();
 
-    // Refresh logged-in user
-if (currentUser) {
-    currentUser = users.find(
-        u => u.username === currentUser.username
-    );
-}
-
-    // Refresh current user
-    currentUser = users.find(
-        u => u.username === currentUser.username
-    );
-
-    // Update dashboard
-    display();
+display();
 
     // Refresh Creator dashboard if open
     if (currentUser.role === "Creator") {
@@ -720,13 +726,10 @@ async function transferCoins() {
     }
 
     // Reload latest data
-    await loadData();
+await loadData();
+await refreshCurrentUser();
 
-    // Refresh current user
-    currentUser = users.find(u => u.username === currentUser.username);
-
-    // Refresh screen
-    display();
+display();
 
     if (currentUser.role === "Creator") {
         displayAllUsers();
@@ -794,6 +797,8 @@ async function approveNoble() {
     // Reload latest data
     await loadData();
 
+    await refreshCurrentUser();
+
     // Refresh dashboard
     displayAllUsers();
     displayAllTransactions();
@@ -802,84 +807,6 @@ async function approveNoble() {
     document.getElementById("approveUser").value = "";
 
     alert(`${username} has been approved as a Noble.`);
-}
-
-// =========================
-// TRANSFER COINS
-// =========================
-async function transferCoins() {
-
-    const username = document.getElementById("transferUser").value.trim();
-    const coin = document.getElementById("transferCoin").value;
-    const amount = Number(document.getElementById("transferAmount").value);
-
-    if (!username || amount <= 0) {
-        alert("Invalid transfer.");
-        return;
-    }
-
-    const receiver = users.find(u => u.username === username);
-
-    if (!receiver) {
-        alert("Recipient not found.");
-        return;
-    }
-
-    if (receiver.username === currentUser.username) {
-        alert("You cannot transfer to yourself.");
-        return;
-    }
-
-    if (currentUser[coin] < amount) {
-        alert("Not enough coins.");
-        return;
-    }
-
-    // Update balances
-    currentUser[coin] -= amount;
-    receiver[coin] += amount;
-
-    // Save sender
-    await supabase
-        .from("users")
-        .update({
-            bront: currentUser.bront,
-            sylem: currentUser.sylem,
-            virel: currentUser.virel,
-            aurel: currentUser.aurel,
-            lumen: currentUser.lumen
-        })
-        .eq("username", currentUser.username);
-
-    // Save receiver
-    await supabase
-        .from("users")
-        .update({
-            bront: receiver.bront,
-            sylem: receiver.sylem,
-            virel: receiver.virel,
-            aurel: receiver.aurel,
-            lumen: receiver.lumen
-        })
-        .eq("username", receiver.username);
-
-    // Record transaction
-    await supabase
-        .from("transactions")
-        .insert([{
-            from_user: currentUser.username,
-            to_user: receiver.username,
-            type: "TRANSFER",
-            coin: coin,
-            amount: amount,
-            date: new Date().toISOString()
-        }]);
-
-    await loadData();
-
-    display();
-
-    alert("Transfer successful.");
 }
 
 // =========================
@@ -1012,11 +939,6 @@ async function resetSystem() {
 // =========================
 // LOGOUT
 // =========================
-function logout() {
-
-    sessionStorage.removeItem("currentUser");
-
-    window.location.href = "login.html";
 
 }
 
