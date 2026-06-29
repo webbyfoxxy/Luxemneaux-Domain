@@ -1,3 +1,5 @@
+alert("THIS IS THE NEW SCRIPT");
+
 console.log("script.js loaded");
 console.log("supabase =", supabase);
 console.log("typeof supabase.from =", typeof supabase.from);
