@@ -240,7 +240,17 @@ Lumen: ${currentUser.lumen}`;
 
   displayTransactions();
 }
+//RefreshCurrentUser
+async function refreshCurrentUser() {
 
+    const { data } = await supabase
+        .from("users")
+        .select("*")
+        .eq("username", currentUser.username)
+        .single();
+
+    currentUser = data;
+}
 // =========================
 // CREATOR - USER TABLE
 // =========================
@@ -475,6 +485,7 @@ async function toggleSuspend() {
 // =========================
 async function addCoins() {
 
+    // Only Royal and Creator can add coins
     if (currentUser.role !== "Royal" && currentUser.role !== "Creator") {
         alert("Only Royal or Creator can add coins.");
         return;
@@ -484,13 +495,14 @@ async function addCoins() {
     const amount = Number(document.getElementById("coinAmount").value);
 
     if (amount <= 0) {
-        alert("Invalid amount.");
+        alert("Please enter a valid amount.");
         return;
     }
 
+    // Add coins locally
     currentUser[coin] += amount;
 
-    // Update balance
+    // Update database
     const { error } = await supabase
         .from("users")
         .update({
@@ -507,8 +519,8 @@ async function addCoins() {
         return;
     }
 
-    // Record transaction
-    await supabase
+    // Save transaction
+    const { error: transactionError } = await supabase
         .from("transactions")
         .insert([{
             from_user: "SYSTEM",
@@ -519,13 +531,156 @@ async function addCoins() {
             date: new Date().toISOString()
         }]);
 
+    if (transactionError) {
+        alert(transactionError.message);
+        return;
+    }
+
+    // Reload everything from Supabase
     await loadData();
 
-    display();
-
-    alert("Coins added successfully.");
+    // Refresh logged-in user
+if (currentUser) {
+    currentUser = users.find(
+        u => u.username === currentUser.username
+    );
 }
 
+    // Refresh current user
+    currentUser = users.find(
+        u => u.username === currentUser.username
+    );
+
+    // Update dashboard
+    display();
+
+    // Refresh Creator dashboard if open
+    if (currentUser.role === "Creator") {
+        displayAllUsers();
+        displayAllTransactions();
+    }
+
+    alert("Coins added successfully!");
+}
+// =========================
+// TRANSFER COINS
+// =========================
+async function transferCoins() {
+
+    const username = document.getElementById("transferUser").value.trim();
+    const coin = document.getElementById("transferCoin").value;
+    const amount = Number(document.getElementById("transferAmount").value);
+
+    if (!username) {
+        alert("Enter a recipient username.");
+        return;
+    }
+
+    if (amount <= 0) {
+        alert("Enter a valid amount.");
+        return;
+    }
+
+    if (username === currentUser.username) {
+        alert("You cannot transfer coins to yourself.");
+        return;
+    }
+
+    // Reload latest database
+    await loadData();
+
+    // Refresh current user
+    currentUser = users.find(u => u.username === currentUser.username);
+
+    // Find receiver
+    const receiver = users.find(u => u.username === username);
+
+    if (!receiver) {
+        alert("Recipient not found.");
+        return;
+    }
+
+    // Check balance
+    if (currentUser[coin] < amount) {
+        alert("Not enough coins.");
+        return;
+    }
+
+    // Transfer
+    currentUser[coin] -= amount;
+    receiver[coin] += amount;
+
+    // Update sender
+    const { error: senderError } = await supabase
+        .from("users")
+        .update({
+            bront: currentUser.bront,
+            sylem: currentUser.sylem,
+            virel: currentUser.virel,
+            aurel: currentUser.aurel,
+            lumen: currentUser.lumen
+        })
+        .eq("username", currentUser.username);
+
+    if (senderError) {
+        alert(senderError.message);
+        return;
+    }
+
+    // Update receiver
+    const { error: receiverError } = await supabase
+        .from("users")
+        .update({
+            bront: receiver.bront,
+            sylem: receiver.sylem,
+            virel: receiver.virel,
+            aurel: receiver.aurel,
+            lumen: receiver.lumen
+        })
+        .eq("username", receiver.username);
+
+    if (receiverError) {
+        alert(receiverError.message);
+        return;
+    }
+
+    // Save transaction
+    const { error: transactionError } = await supabase
+        .from("transactions")
+        .insert([{
+            from_user: currentUser.username,
+            to_user: receiver.username,
+            type: "TRANSFER",
+            coin: coin,
+            amount: amount,
+            date: new Date().toISOString()
+        }]);
+
+    if (transactionError) {
+        alert(transactionError.message);
+        return;
+    }
+
+    // Reload latest data
+    await loadData();
+
+    // Refresh current user
+    currentUser = users.find(u => u.username === currentUser.username);
+
+    // Refresh screen
+    display();
+
+    if (currentUser.role === "Creator") {
+        displayAllUsers();
+        displayAllTransactions();
+    }
+
+    // Clear fields
+    document.getElementById("transferUser").value = "";
+    document.getElementById("transferAmount").value = "";
+
+    alert("Transfer successful!");
+}
 // =========================
 // APPROVE NOBLE
 // =========================
