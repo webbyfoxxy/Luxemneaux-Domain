@@ -12,6 +12,8 @@ let currentUser = null;
 // =========================
 async function loadData() {
 
+    console.log("loadKingdoms() called");
+
     // Load users
     const { data: usersData } = await supabase
         .from("users")
@@ -23,6 +25,10 @@ async function loadData() {
     const { data: kingdomData, error: kingdomError } = await supabase
         .from("kingdoms")
         .select("*");
+    
+    console.log(kingdomData)
+    console.log(kingdomError);
+    
 
     if (kingdomError) {
         console.error(kingdomError);
@@ -30,6 +36,8 @@ async function loadData() {
     }
 
     kingdoms = kingdomData.map(k => k.name);
+
+    console.log(kingdoms);
 
     // Load transactions
     const { data: transactionData } = await supabase
