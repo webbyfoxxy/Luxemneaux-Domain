@@ -358,41 +358,51 @@ async function deleteKingdom() {
         return;
     }
 
-    if (!confirm(`Delete "${kingdom}" and all users inside it?`)) {
+    if (!confirm(`Delete "${kingdom}" and ALL users inside it?`)) {
         return;
     }
 
-    // Delete transactions involving users in this kingdom
-    const { data: kingdomUsers } = await supabase
-        .from("users")
-        .select("username")
-        .eq("kingdom", kingdom);
+    // Delete all transactions involving users in this kingdom
+    const kingdomUsers = users.filter(u => u.kingdom === kingdom);
 
-    if (kingdomUsers) {
-        for (const user of kingdomUsers) {
+    for (const user of kingdomUsers) {
 
-            await supabase
-                .from("transactions")
-                .delete()
-                .or(`from_user.eq.${user.username},to_user.eq.${user.username}`);
-        }
+        await supabase
+            .from("transactions")
+            .delete()
+            .or(`from_user.eq.${user.username},to_user.eq.${user.username}`);
     }
 
-    // Delete users
-    await supabase
+    // Delete all users in the kingdom
+    const { error: userError } = await supabase
         .from("users")
         .delete()
         .eq("kingdom", kingdom);
 
-    // Delete kingdom
-    await supabase
+    if (userError) {
+        alert(userError.message);
+        return;
+    }
+
+    // Delete the kingdom itself
+    const { error: kingdomError } = await supabase
         .from("kingdoms")
         .delete()
         .eq("name", kingdom);
 
+    if (kingdomError) {
+        alert(kingdomError.message);
+        return;
+    }
+
+    // Reload latest data
     await loadData();
 
-    alert("Kingdom deleted.");
+    // Refresh Creator dashboard
+    displayAllUsers();
+    displayAllTransactions();
+
+    alert("Kingdom deleted successfully.");
 
     location.reload();
 }
@@ -405,7 +415,7 @@ async function deleteUser() {
     const username = document.getElementById("manageUser").value.trim();
 
     if (!username) {
-        alert("Enter username.");
+        alert("Enter a username.");
         return;
     }
 
@@ -414,38 +424,67 @@ async function deleteUser() {
         return;
     }
 
-    await supabase
+    // Check if user exists
+    const { data: user, error: findError } = await supabase
+        .from("users")
+        .select("*")
+        .eq("username", username)
+        .single();
+
+    if (findError || !user) {
+        alert("User not found.");
+        return;
+    }
+
+    // Confirm deletion
+    if (!confirm(`Delete user "${username}"?`)) {
+        return;
+    }
+
+    // Delete all transactions involving the user
+    const { error: transactionError } = await supabase
         .from("transactions")
         .delete()
         .or(`from_user.eq.${username},to_user.eq.${username}`);
 
-    const { error } = await supabase
+    if (transactionError) {
+        alert(transactionError.message);
+        return;
+    }
+
+    // Delete the user
+    const { error: userError } = await supabase
         .from("users")
         .delete()
         .eq("username", username);
 
-    if (error) {
-        alert(error.message);
+    if (userError) {
+        alert(userError.message);
         return;
     }
 
+    // Reload latest data
     await loadData();
 
+    // Refresh dashboard
     displayAllUsers();
     displayAllTransactions();
 
-    alert("User deleted.");
+    // Clear input
+    document.getElementById("manageUser").value = "";
+
+    alert("User deleted successfully!");
 }
 
 // =========================
-// SUSPEND / UNSUSPEND
+// SUSPEND / UNSUSPEND USER
 // =========================
 async function toggleSuspend() {
 
     const username = document.getElementById("manageUser").value.trim();
 
     if (!username) {
-        alert("Enter username.");
+        alert("Enter a username.");
         return;
     }
 
@@ -454,30 +493,49 @@ async function toggleSuspend() {
         return;
     }
 
-    const user = users.find(u => u.username === username);
+    // Find user
+    const { data: user, error: findError } = await supabase
+        .from("users")
+        .select("*")
+        .eq("username", username)
+        .single();
 
-    if (!user) {
+    if (findError || !user) {
         alert("User not found.");
         return;
     }
 
-    const { error } = await supabase
+    // Toggle suspension
+    const newStatus = !user.suspended;
+
+    // Update database
+    const { error: updateError } = await supabase
         .from("users")
         .update({
-            suspended: !user.suspended
+            suspended: newStatus
         })
         .eq("username", username);
 
-    if (error) {
-        alert(error.message);
+    if (updateError) {
+        alert(updateError.message);
         return;
     }
 
+    // Reload latest data
     await loadData();
 
+    // Refresh dashboard
     displayAllUsers();
+    displayAllTransactions();
 
-    alert("User status updated.");
+    // Clear input
+    document.getElementById("manageUser").value = "";
+
+    alert(
+        newStatus
+            ? "User has been suspended."
+            : "User has been unsuspended."
+    );
 }
 
 // =========================
@@ -686,16 +744,26 @@ async function transferCoins() {
 // =========================
 async function approveNoble() {
 
-    const username = document.getElementById("approveUser").value.trim();
-
-    if (!username) {
-        alert("Enter username.");
+    if (currentUser.role !== "Royal" && currentUser.role !== "Creator") {
+        alert("Only Royal or Creator can approve Nobles.");
         return;
     }
 
-    const user = users.find(u => u.username === username);
+    const username = document.getElementById("approveUser").value.trim();
 
-    if (!user) {
+    if (!username) {
+        alert("Enter a username.");
+        return;
+    }
+
+    // Find the user
+    const { data: user, error: findError } = await supabase
+        .from("users")
+        .select("*")
+        .eq("username", username)
+        .single();
+
+    if (findError || !user) {
         alert("User not found.");
         return;
     }
@@ -705,23 +773,35 @@ async function approveNoble() {
         return;
     }
 
-    const { error } = await supabase
+    if (user.approved) {
+        alert("This Noble is already approved.");
+        return;
+    }
+
+    // Approve Noble
+    const { error: updateError } = await supabase
         .from("users")
         .update({
             approved: true
         })
         .eq("username", username);
 
-    if (error) {
-        alert(error.message);
+    if (updateError) {
+        alert(updateError.message);
         return;
     }
 
+    // Reload latest data
     await loadData();
 
+    // Refresh dashboard
     displayAllUsers();
+    displayAllTransactions();
 
-    alert("Noble approved.");
+    // Clear input
+    document.getElementById("approveUser").value = "";
+
+    alert(`${username} has been approved as a Noble.`);
 }
 
 // =========================
@@ -879,20 +959,52 @@ async function resetSystem() {
         return;
     }
 
-    if (!confirm("This will delete EVERYTHING. Continue?")) {
+    if (!confirm("⚠ WARNING!\n\nThis will permanently delete ALL users, kingdoms, and transactions.\n\nContinue?")) {
         return;
     }
 
-    await supabase.from("transactions").delete().neq("id", "");
-    await supabase.from("users").delete().neq("id", "");
-    await supabase.from("kingdoms").delete().neq("id", "");
+    // Delete all transactions
+    const { error: transactionError } = await supabase
+        .from("transactions")
+        .delete()
+        .neq("id", 0);
 
-    // Restore default kingdom
-    await supabase
+    if (transactionError) {
+        alert(transactionError.message);
+        return;
+    }
+
+    // Delete all users
+    const { error: userError } = await supabase
+        .from("users")
+        .delete()
+        .neq("id", 0);
+
+    if (userError) {
+        alert(userError.message);
+        return;
+    }
+
+    // Delete all kingdoms
+    const { error: kingdomError } = await supabase
         .from("kingdoms")
-        .insert([{ name: "No Kingdom" }]);
+        .delete()
+        .neq("id", 0);
+
+    if (kingdomError) {
+        alert(kingdomError.message);
+        return;
+    }
+
+    // Reload data
+    await loadData();
+
+    // Log out
+    currentUser = null;
 
     sessionStorage.removeItem("currentUser");
+
+    alert("System has been reset successfully!");
 
     window.location.href = "login.html";
 }
