@@ -23,31 +23,22 @@ async function loadData() {
 
     // Load kingdoms
     const { data: kingdomData, error: kingdomError } = await supabase
-        .from("kingdoms")
-        .select("*");
-    
-    console.log(kingdomData)
-    console.log(kingdomError);
-    
+    .from("kingdoms")
+    .select("*");
 
-    if (kingdomError) {
-        console.error(kingdomError);
-        return;
-    }
+console.log("Kingdom Data:", kingdomData);
+console.log("Kingdom Error:", kingdomError);
 
-    kingdoms = kingdomData.map(k => k.name);
+if (kingdomError) {
+    console.error(kingdomError);
+    return;
+}
 
-    console.log(kingdoms);
+kingdoms = kingdomData.map(k => k.name);
 
-    // Load transactions
-    const { data: transactionData } = await supabase
-        .from("transactions")
-        .select("*");
+console.log("Kingdom Array:", kingdoms);
 
-    transactionsDB = transactionData || [];
-
-    // Populate the dropdown
-    loadKingdoms();
+loadKingdoms();
 }
 // =========================
 // LOAD KINGDOMS
