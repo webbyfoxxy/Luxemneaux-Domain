@@ -324,6 +324,17 @@ function displayAllTransactions() {
 // CREATE KINGDOM
 // =========================
 async function createKingdom() {
+    
+    const { data } = await supabase
+        .from("users")
+        .select("role")
+        .eq("username", currentUser.username)
+        .single();
+
+    if (!data || data.role !== "Creator") {
+        alert("Access denied.");
+        return;
+    }
 
     let name = document.getElementById("newKingdom").value.trim();
 
@@ -360,9 +371,14 @@ async function createKingdom() {
 // DELETE KINGDOM
 // =========================
 async function deleteKingdom() {
+    const { data } = await supabase
+        .from("users")
+        .select("role")
+        .eq("username", currentUser.username)
+        .single();
 
-    if (currentUser.role !== "Creator") {
-        alert("Only the Creator can delete kingdoms.");
+    if (!data || data.role !== "Creator") {
+        alert("Access denied.");
         return;
     }
 
@@ -427,6 +443,17 @@ async function deleteKingdom() {
 // DELETE USER
 // =========================
 async function deleteUser() {
+
+    const { data } = await supabase
+        .from("users")
+        .select("role")
+        .eq("username", currentUser.username)
+        .single();
+
+    if (!data || data.role !== "Creator") {
+        alert("Access denied.");
+        return;
+    }
 
     const username = document.getElementById("manageUser").value.trim();
 
@@ -497,6 +524,18 @@ async function deleteUser() {
 // SUSPEND / UNSUSPEND USER
 // =========================
 async function toggleSuspend() {
+
+    const { data } = await supabase
+        .from("users")
+        .select("role")
+        .eq("username", currentUser.username)
+        .single();
+
+    if (!data || data.role !== "Creator") {
+        alert("Access denied.");
+        return;
+    }
+
 
     const username = document.getElementById("manageUser").value.trim();
 
@@ -880,6 +919,17 @@ async function deleteAccount() {
 // RESET SYSTEM
 // =========================
 async function resetSystem() {
+
+    const { data } = await supabase
+        .from("users")
+        .select("role")
+        .eq("username", currentUser.username)
+        .single();
+
+    if (!data || data.role !== "Creator") {
+        alert("Access denied.");
+        return;
+    }
 
     if (currentUser.role !== "Creator") {
         alert("Only the Creator can reset the system.");
