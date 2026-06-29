@@ -1,6 +1,3 @@
-const SUPABASE_URL = "https://modvxlnceswqeqwcjegt.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_6sqdMCnv5tbtLUWQ7m7fWA_n0cu_np3";
-
 
 // =========================
 // DATABASE
