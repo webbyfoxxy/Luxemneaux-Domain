@@ -21,47 +21,24 @@ async function loadData() {
 
     console.log("=== Loading Data ===");
 
-    // USERS
-    const { data: usersData, error: usersError } = await supabase
-        .from("users")
-        .select("*");
+    try {
 
-    if (usersError) {
-        console.error("Users Error:", usersError);
-    } else {
-        users = usersData || [];
-        console.log("Users:", users);
+        console.log("Before users query");
+
+        const result = await supabase
+            .from("users")
+            .select("*");
+
+        console.log("After users query");
+
+        console.log(result);
+
+    } catch (err) {
+
+        console.error("Caught Error:", err);
+
     }
 
-    // KINGDOMS
-    const { data: kingdomData, error: kingdomError } = await supabase
-        .from("kingdoms")
-        .select("*");
-
-    if (kingdomError) {
-        console.error("Kingdom Error:", kingdomError);
-    } else {
-        console.log("Kingdom Data:", kingdomData);
-
-        kingdoms = kingdomData.map(k => k.name);
-
-        console.log("Kingdom Array:", kingdoms);
-
-        loadKingdoms();
-    }
-
-    // TRANSACTIONS
-    const { data: transactionData, error: transactionError } = await supabase
-        .from("transactions")
-        .select("*");
-
-    if (transactionError) {
-        console.error("Transaction Error:", transactionError);
-    } else {
-        transactionsDB = transactionData || [];
-    }
-
-    console.log("=== Finished Loading ===");
 }
 
 // =========================
