@@ -261,8 +261,8 @@ async function refreshCurrentUser() {
     currentUser = data;
 
     sessionStorage.setItem(
-        "currentUser",
-        JSON.stringify(currentUser)
+    "currentUser",
+    currentUser.username
     );
 }
 // =========================
@@ -940,8 +940,6 @@ async function resetSystem() {
 // LOGOUT
 // =========================
 
-}
-
 function logout() {
     sessionStorage.removeItem("currentUser");
     currentUser = null;
@@ -954,9 +952,5 @@ function logout() {
 window.onload = async () => {
 
     await loadData();
-
-    if (window.location.pathname.includes("index.html")) {
-        await initDashboard();
-    }
 
 };
