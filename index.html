@@ -101,6 +101,15 @@
 <button onclick="deleteAccount()" style="background:#f44336;">Delete Account</button>
 <button onclick="resetSystem()" style="background:#ff5722;">Reset System 🔥</button>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+const supabase = window.supabase.createClient(
+  "https://YOUR_PROJECT.supabase.co",
+  "YOUR_ANON_KEY"
+);
+</script>
+
 <script src="script.js"></script>
 </body>
 </html>
