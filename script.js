@@ -1,8 +1,12 @@
 alert("THIS IS THE NEW SCRIPT");
 
-console.log("script.js loaded");
-console.log("supabase =", supabase);
-console.log("typeof supabase.from =", typeof supabase.from);
+console.log("window.supabase =", window.supabase);
+
+try {
+    console.log("supabase =", supabase);
+} catch (e) {
+    console.log("supabase variable doesn't exist yet");
+}
 
 // =========================
 // DATABASE
@@ -16,6 +20,11 @@ let currentUser = null;
 // LOAD ALL DATA
 // =========================
 async function loadData() {
+    console.log("Inside loadData");
+    console.log("window.supabase =", window.supabase);
+    console.log("supabase =", supabase);
+    console.log("typeof supabase.from =", typeof supabase.from);
+    console.log("same object?", supabase === window.supabase);
 
     console.log("loadKingdoms() called");
 
