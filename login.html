@@ -38,6 +38,10 @@ const supabase = window.supabase.createClient(
   "https://modvxlnceswqeqwcjegt.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vZHZ4bG5jZXN3cWVxd2NqZWd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2ODA1MzEsImV4cCI6MjA5ODI1NjUzMX0.cIVQqsUGhdg2jwdpBkUNJA01YkkJVyRT_0TA5bwPJTU"
 );
+
+  window.db = supabase;
+  console.log("CLIENT:", window.db);
+  console.log("CLIENT FROM:", typeof window.db.from);
 </script>
 
 <script src="script.js"></script>
