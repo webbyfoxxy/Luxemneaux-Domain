@@ -21,58 +21,107 @@ let currentUser = null;
 // =========================
 async function loadData() {
 
-    console.log("STEP 1");
+    console.log("=== Loading Data ===");
 
-    const { data: kingdomData, error } = await supabase
+    // USERS
+    const { data: usersData, error: usersError } = await supabase
+        .from("users")
+        .select("*");
+
+    if (usersError) {
+        console.error("Users Error:", usersError);
+    } else {
+        users = usersData || [];
+        console.log("Users:", users);
+    }
+
+    // KINGDOMS
+    const { data: kingdomData, error: kingdomError } = await supabase
         .from("kingdoms")
         .select("*");
 
-    console.log("STEP 2");
-    console.log(kingdomData);
-    console.log(error);
+    if (kingdomError) {
+        console.error("Kingdom Error:", kingdomError);
+    } else {
+        console.log("Kingdom Data:", kingdomData);
 
-    kingdoms = kingdomData ? kingdomData.map(k => k.name) : [];
+        kingdoms = kingdomData.map(k => k.name);
 
-    console.log("STEP 3");
-    console.log(kingdoms);
+        console.log("Kingdom Array:", kingdoms);
 
-    loadKingdoms();
+        loadKingdoms();
+    }
 
-    console.log("STEP 4");
+    // TRANSACTIONS
+    const { data: transactionData, error: transactionError } = await supabase
+        .from("transactions")
+        .select("*");
+
+    if (transactionError) {
+        console.error("Transaction Error:", transactionError);
+    } else {
+        transactionsDB = transactionData || [];
+    }
+
+    console.log("=== Finished Loading ===");
 }
+
 // =========================
 // LOAD KINGDOMS
 // =========================
 function loadKingdoms() {
 
-    console.log("loadKingdoms()");
+    console.log("Loading Kingdom Dropdown");
 
     const select = document.getElementById("kingdomSelect");
 
-    console.log(select);
+    if (select) {
 
-    if (!select) {
-        console.log("SELECT NOT FOUND");
-        return;
+        select.innerHTML = "";
+
+        if (kingdoms.length === 0) {
+
+            const option = document.createElement("option");
+            option.textContent = "No Kingdom";
+            option.value = "";
+
+            select.appendChild(option);
+
+        } else {
+
+            kingdoms.forEach(name => {
+
+                const option = document.createElement("option");
+                option.value = name;
+                option.textContent = name;
+
+                select.appendChild(option);
+
+            });
+
+        }
+
+        console.log("Register dropdown:", select.options.length);
     }
 
-    select.innerHTML = "";
+    const deleteSelect = document.getElementById("deleteKingdom");
 
-    console.log("Kingdom count:", kingdoms.length);
+    if (deleteSelect) {
 
-    kingdoms.forEach(name => {
+        deleteSelect.innerHTML = "";
 
-        console.log("Adding:", name);
+        kingdoms.forEach(name => {
 
-        const option = document.createElement("option");
-        option.value = name;
-        option.textContent = name;
+            const option = document.createElement("option");
+            option.value = name;
+            option.textContent = name;
 
-        select.appendChild(option);
+            deleteSelect.appendChild(option);
 
-    });
+        });
 
-    console.log("Finished");
+        console.log("Delete dropdown:", deleteSelect.options.length);
+    }
 }
 // =========================
 // REGISTER
@@ -1018,8 +1067,12 @@ function logout() {
 // =========================
 // PAGE LOAD
 // =========================
-window.onload = async () => {
+window.onload = async function () {
 
     await loadData();
+
+    if (window.location.pathname.includes("index.html")) {
+        await initDashboard();
+    }
 
 };
