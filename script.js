@@ -18,82 +18,52 @@ async function loadData() {
 
     console.log("=== Loading Data ===");
 
-    try {
-
-        console.log("Before users query");
-
-        const result = await window.db
+    // USERS
+    const { data: usersData, error: usersError } =
+        await window.db
             .from("users")
             .select("*");
 
-        console.log("After users query");
-
-        console.log(result);
-
-    } catch (err) {
-
-        console.error("Caught Error:", err);
-
+    if (usersError) {
+        console.error(usersError);
+        return;
     }
 
-}
+    users = usersData || [];
 
-// =========================
-// LOAD KINGDOMS
-// =========================
-function loadKingdoms() {
+    console.log("Users:", users);
 
-    console.log("Loading Kingdom Dropdown");
+    // KINGDOMS
+    const { data: kingdomData, error: kingdomError } =
+        await window.db
+            .from("kingdoms")
+            .select("*");
 
-    const select = document.getElementById("kingdomSelect");
-
-    if (select) {
-
-        select.innerHTML = "";
-
-        if (kingdoms.length === 0) {
-
-            const option = document.createElement("option");
-            option.textContent = "No Kingdom";
-            option.value = "";
-
-            select.appendChild(option);
-
-        } else {
-
-            kingdoms.forEach(name => {
-
-                const option = document.createElement("option");
-                option.value = name;
-                option.textContent = name;
-
-                select.appendChild(option);
-
-            });
-
-        }
-
-        console.log("Register dropdown:", select.options.length);
+    if (kingdomError) {
+        console.error(kingdomError);
+        return;
     }
 
-    const deleteSelect = document.getElementById("deleteKingdom");
+    console.log("Kingdom Data:", kingdomData);
 
-    if (deleteSelect) {
+    kingdoms = kingdomData.map(k => k.name);
 
-        deleteSelect.innerHTML = "";
+    console.log("Kingdom Array:", kingdoms);
 
-        kingdoms.forEach(name => {
+    // TRANSACTIONS
+    const { data: transactionData, error: transactionError } =
+        await window.db
+            .from("transactions")
+            .select("*");
 
-            const option = document.createElement("option");
-            option.value = name;
-            option.textContent = name;
-
-            deleteSelect.appendChild(option);
-
-        });
-
-        console.log("Delete dropdown:", deleteSelect.options.length);
+    if (transactionError) {
+        console.error(transactionError);
+        return;
     }
+
+    transactionsDB = transactionData || [];
+
+    loadKingdoms();
 }
 // =========================
 // REGISTER
