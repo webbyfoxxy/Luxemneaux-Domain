@@ -1,3 +1,5 @@
+console.log("window.db =", window.db);
+console.log("typeof window.db.from =", typeof window.db.from);
 console.log("window.supabase =", window.supabase);
 console.log("window.supabase.from =", window.supabase.from);
 console.log("window.supabase.createClient =", window.supabase.createClient);
@@ -20,7 +22,7 @@ async function loadData() {
 
         console.log("Before users query");
 
-        const result = await supabase
+        const result = await window.db
             .from("users")
             .select("*");
 
@@ -123,7 +125,7 @@ async function register() {
         return;
     }
 
-    const { error } = await supabase
+    const { error } = await window.db
         .from("users")
         .insert([
             {
@@ -172,7 +174,7 @@ async function login() {
         return;
     }
 
-    const { data: user, error } = await supabase
+    const { data: user, error } = await window.db
         .from("users")
         .select("*")
         .eq("username", u)
@@ -214,7 +216,7 @@ async function initDashboard() {
         return;
     }
 
-    const { data: user, error } = await supabase
+    const { data: user, error } = await window.db
         .from("users")
         .select("*")
         .eq("username", username)
@@ -285,7 +287,7 @@ async function refreshCurrentUser() {
 
     if (!currentUser) return;
 
-    const { data, error } = await supabase
+    const { data, error } = await window.db
         .from("users")
         .select("*")
         .eq("username", currentUser.username)
@@ -363,7 +365,7 @@ function displayAllTransactions() {
 // =========================
 async function createKingdom() {
     
-    const { data } = await supabase
+    const { data } = await window.db
         .from("users")
         .select("role")
         .eq("username", currentUser.username)
@@ -388,7 +390,7 @@ async function createKingdom() {
         return;
     }
 
-    const { error } = await supabase
+    const { error } = await window.db
         .from("kingdoms")
         .insert([{ name: name }]);
 
@@ -409,7 +411,7 @@ async function createKingdom() {
 // DELETE KINGDOM
 // =========================
 async function deleteKingdom() {
-    const { data } = await supabase
+    const { data } = await window.db
         .from("users")
         .select("role")
         .eq("username", currentUser.username)
@@ -436,14 +438,14 @@ async function deleteKingdom() {
 
     for (const user of kingdomUsers) {
 
-        await supabase
+        await window.db
             .from("transactions")
             .delete()
             .or(`from_user.eq.${user.username},to_user.eq.${user.username}`);
     }
 
     // Delete all users in the kingdom
-    const { error: userError } = await supabase
+    const { error: userError } = await window.db
         .from("users")
         .delete()
         .eq("kingdom", kingdom);
@@ -454,7 +456,7 @@ async function deleteKingdom() {
     }
 
     // Delete the kingdom itself
-    const { error: kingdomError } = await supabase
+    const { error: kingdomError } = await window.db
         .from("kingdoms")
         .delete()
         .eq("name", kingdom);
@@ -482,7 +484,7 @@ async function deleteKingdom() {
 // =========================
 async function deleteUser() {
 
-    const { data } = await supabase
+    const { data } = await window.db
         .from("users")
         .select("role")
         .eq("username", currentUser.username)
@@ -506,7 +508,7 @@ async function deleteUser() {
     }
 
     // Check if user exists
-    const { data: user, error: findError } = await supabase
+    const { data: user, error: findError } = await window.db
         .from("users")
         .select("*")
         .eq("username", username)
@@ -523,7 +525,7 @@ async function deleteUser() {
     }
 
     // Delete all transactions involving the user
-    const { error: transactionError } = await supabase
+    const { error: transactionError } = await window.db
         .from("transactions")
         .delete()
         .or(`from_user.eq.${username},to_user.eq.${username}`);
@@ -534,7 +536,7 @@ async function deleteUser() {
     }
 
     // Delete the user
-    const { error: userError } = await supabase
+    const { error: userError } = await window.db
         .from("users")
         .delete()
         .eq("username", username);
@@ -563,7 +565,7 @@ async function deleteUser() {
 // =========================
 async function toggleSuspend() {
 
-    const { data } = await supabase
+    const { data } = await window.db
         .from("users")
         .select("role")
         .eq("username", currentUser.username)
@@ -588,7 +590,7 @@ async function toggleSuspend() {
     }
 
     // Find user
-    const { data: user, error: findError } = await supabase
+    const { data: user, error: findError } = await window.db
         .from("users")
         .select("*")
         .eq("username", username)
@@ -603,7 +605,7 @@ async function toggleSuspend() {
     const newStatus = !user.suspended;
 
     // Update database
-    const { error: updateError } = await supabase
+    const { error: updateError } = await window.db
         .from("users")
         .update({
             suspended: newStatus
@@ -656,7 +658,7 @@ async function addCoins() {
     currentUser[coin] += amount;
 
     // Update database
-    const { error } = await supabase
+    const { error } = await window.db
         .from("users")
         .update({
             bront: currentUser.bront,
@@ -673,7 +675,7 @@ async function addCoins() {
     }
 
     // Save transaction
-    const { error: transactionError } = await supabase
+    const { error: transactionError } = await window.db
         .from("transactions")
         .insert([{
             from_user: "SYSTEM",
@@ -752,7 +754,7 @@ async function transferCoins() {
     receiver[coin] += amount;
 
     // Update sender
-    const { error: senderError } = await supabase
+    const { error: senderError } = await window.db
         .from("users")
         .update({
             bront: currentUser.bront,
@@ -769,7 +771,7 @@ async function transferCoins() {
     }
 
     // Update receiver
-    const { error: receiverError } = await supabase
+    const { error: receiverError } = await window.db
         .from("users")
         .update({
             bront: receiver.bront,
@@ -786,7 +788,7 @@ async function transferCoins() {
     }
 
     // Save transaction
-    const { error: transactionError } = await supabase
+    const { error: transactionError } = await window.db
         .from("transactions")
         .insert([{
             from_user: currentUser.username,
@@ -837,7 +839,7 @@ async function approveNoble() {
     }
 
     // Find the user
-    const { data: user, error: findError } = await supabase
+    const { data: user, error: findError } = await window.db
         .from("users")
         .select("*")
         .eq("username", username)
@@ -859,7 +861,7 @@ async function approveNoble() {
     }
 
     // Approve Noble
-    const { error: updateError } = await supabase
+    const { error: updateError } = await window.db
         .from("users")
         .update({
             approved: true
@@ -932,12 +934,12 @@ async function deleteAccount() {
         return;
     }
 
-    await supabase
+    await window.db
         .from("transactions")
         .delete()
         .or(`from_user.eq.${currentUser.username},to_user.eq.${currentUser.username}`);
 
-    const { error } = await supabase
+    const { error } = await window.db
         .from("users")
         .delete()
         .eq("username", currentUser.username);
@@ -958,7 +960,7 @@ async function deleteAccount() {
 // =========================
 async function resetSystem() {
 
-    const { data } = await supabase
+    const { data } = await window.db
         .from("users")
         .select("role")
         .eq("username", currentUser.username)
@@ -979,7 +981,7 @@ async function resetSystem() {
     }
 
     // Delete all transactions
-    const { error: transactionError } = await supabase
+    const { error: transactionError } = await window.db
         .from("transactions")
         .delete()
         .neq("id", 0);
@@ -990,7 +992,7 @@ async function resetSystem() {
     }
 
     // Delete all users
-    const { error: userError } = await supabase
+    const { error: userError } = await window.db
         .from("users")
         .delete()
         .neq("id", 0);
@@ -1001,7 +1003,7 @@ async function resetSystem() {
     }
 
     // Delete all kingdoms
-    const { error: kingdomError } = await supabase
+    const { error: kingdomError } = await window.db
         .from("kingdoms")
         .delete()
         .neq("id", 0);
